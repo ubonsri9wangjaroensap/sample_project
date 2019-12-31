@@ -1,0 +1,23 @@
+version: '3'
+services:
+#     nginx:
+#        build:
+#            dockerfile: Dockerfile
+#            context: ./nginx
+#        ports:
+#           - 9000:80
+     api:
+         build:
+            dockerfile: Dockerfile
+            context: ./sample_server
+         ports:
+            - 8080:8080
+     client:
+         build:
+            dockerfile: Dockerfile
+            context: ./sample_client
+         volumes:
+            - /app/node_modules
+            - ./sample_client:/app
+         ports:
+            - 3000:3000
