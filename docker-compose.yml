@@ -6,6 +6,8 @@ services:
 #            context: ./nginx
 #        ports:
 #           - 9000:80
+     redis-server:
+         image: 'redis'
      api:
          build:
             dockerfile: Dockerfile
@@ -15,9 +17,9 @@ services:
      client:
          build:
             dockerfile: Dockerfile
-            context: ./sample_client
+            context: ./chatbot
          volumes:
             - /app/node_modules
-            - ./sample_client:/app
+            - ./chatbot:/app
          ports:
             - 3000:3000
