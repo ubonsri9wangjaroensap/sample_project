@@ -24,6 +24,21 @@ public class Example {
         return "Welcome from server!";
     }
 
+    @PostMapping("/training")
+    TrainingModel createTraining(@RequestBody TrainingModel training){
+         return getTrainingModel(); 
+    }
+
+    private TrainingModel getTrainingModel(){
+        List<String> keys = new ArrayList<String>();
+       keys.add("test");
+       keys.add("happy");
+       TrainingModel training = new TrainingModel();
+       training.setMessage("messsage happy");
+       training.setKeys(keys);
+       return training;
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(Example.class, args);
         
