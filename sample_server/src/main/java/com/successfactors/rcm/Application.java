@@ -2,21 +2,18 @@ import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.*;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
-import edu.stanford.nlp.io.*;
 import edu.stanford.nlp.ling.*;
 import edu.stanford.nlp.pipeline.*;
-import edu.stanford.nlp.trees.*;
-import edu.stanford.nlp.util.*;
+
 import java.util.*;
 import java.io.IOException; 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 
 @RestController
 @EnableAutoConfiguration
 @CrossOrigin(origins = "http://localhost:3000")
 //@CrossOrigin
-public class Example {
+public class Application {
 
     @RequestMapping("/welcome")
     String home() {
@@ -40,8 +37,7 @@ public class Example {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(Example.class, args);
-        
+        SpringApplication.run(Application.class, args);
     }
 
     public void testRedis(){
@@ -109,21 +105,21 @@ public class Example {
 
 }
 
-class TrainingModel{
-  String message;
-  List<String> keys;
-
-  public void setMessage(String message){
-     this.message=message;
- }
-  public String getMessage(){
-    return message;
- }
- public void setKeys(List<String> keys){
-    this.keys=keys;
- }
- public List<String> getKeys(){
-    return keys;
- }
-}
+//class TrainingModel{
+//  String message;
+//  List<String> keys;
+//
+//  public void setMessage(String message){
+//     this.message=message;
+// }
+//  public String getMessage(){
+//    return message;
+// }
+// public void setKeys(List<String> keys){
+//    this.keys=keys;
+// }
+// public List<String> getKeys(){
+//    return keys;
+// }
+//}
 
