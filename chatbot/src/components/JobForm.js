@@ -30,9 +30,9 @@ class JobForm extends Component {
     Job Req Id: {this.props.id}
     </p>
     <div className = "ui input"><input style={{width:120}} placeholder="username"
-         onChange={(e) =>this.setState({firstName:e.target.value})}/>&nbsp;&nbsp;</div>
+         onChange={(e) =>this.setState({username:e.target.value})}/>&nbsp;&nbsp;</div>
     <div className = "ui input"><input style={{width:120}} placeholder="password"
-         onChange={(e) =>this.setState({lastName:e.target.value})}/></div>
+         onChange={(e) =>this.setState({password:e.target.value})}/></div>
     <br/><br/>
     <button className="ui button" style={{width:120}} onClick={this.handleOnClick}>
       Submit
