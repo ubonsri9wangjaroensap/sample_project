@@ -31,7 +31,7 @@ class JobForm extends Component {
     </p>
     <div className = "ui input"><input style={{width:120}} placeholder="username"
          onChange={(e) =>this.setState({username:e.target.value})}/>&nbsp;&nbsp;</div>
-    <div className = "ui input"><input style={{width:120}} placeholder="password"
+    <div className = "ui input"><input type="password" style={{width:120}} placeholder="password"
          onChange={(e) =>this.setState({password:e.target.value})}/></div>
     <br/><br/>
     <button className="ui button" style={{width:120}} onClick={this.handleOnClick}>
