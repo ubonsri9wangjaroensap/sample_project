@@ -3,10 +3,9 @@ import axios from 'axios';
 
 class JobForm extends Component {
 
-  state={firstName:'',lastName:'',phone:'',email:'',result:''};
+  state={username:'',password:'',result:''};
   handleOnClick=(e)=>{
-    let data ={firstName:this.state.firstName,lastName:this.state.lastName,
-      phone:this.state.phone,email:this.state.email,jobReqId:this.props.id};
+    let data ={username:this.state.username,password:this.state.password,jobReqId:this.props.id};
     console.log(data);
     this.sendApplicationRequest(data,"jobApplication");
   }
@@ -30,15 +29,10 @@ class JobForm extends Component {
     <br/>
     Job Req Id: {this.props.id}
     </p>
-    <div className = "ui input"><input style={{width:120}} placeholder="First Name"
+    <div className = "ui input"><input style={{width:120}} placeholder="username"
          onChange={(e) =>this.setState({firstName:e.target.value})}/>&nbsp;&nbsp;</div>
-    <div className = "ui input"><input style={{width:120}} placeholder="Last Name"
+    <div className = "ui input"><input style={{width:120}} placeholder="password"
          onChange={(e) =>this.setState({lastName:e.target.value})}/></div>
-    <br/><br/>
-    <div className = "ui input"><input style={{width:120}} placeholder="Phone"
-         onChange={(e) =>this.setState({phone:e.target.value})}/>&nbsp;&nbsp;</div>
-    <div className = "ui input"><input style={{width:120}} placeholder="Email"
-         onChange={(e) =>this.setState({email:e.target.value})}/></div>
     <br/><br/>
     <button className="ui button" style={{width:120}} onClick={this.handleOnClick}>
       Submit
