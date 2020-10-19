@@ -21,7 +21,7 @@ class JobSearch extends Component {
   handleOnClick=(e)=>{
     let data ={title:this.state.title,city:this.state.city,state:this.state.state,country:this.state.country};
     console.log(data);
-    this.sendSearchRequest(data,"jobSearch");
+    this.sendSearchRequest(data,"jobList");
   }
   async sendSearchRequest (data,type){
     console.log("message sent: "+data);
