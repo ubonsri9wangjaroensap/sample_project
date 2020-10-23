@@ -1,3 +1,5 @@
+package com.successfactors.rcm;
+
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.*;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RestController
 @EnableAutoConfiguration
 @CrossOrigin(origins = "http://localhost:3000")
-//@CrossOrigin
 public class Application {
 
     @RequestMapping("/welcome")
@@ -23,7 +24,7 @@ public class Application {
 
     @PostMapping("/training")
     TrainingModel createTraining(@RequestBody TrainingModel training){
-         return getTrainingModel(); 
+         return getTrainingModel();
     }
 
     private TrainingModel getTrainingModel(){
@@ -105,21 +106,21 @@ public class Application {
 
 }
 
-//class TrainingModel{
-//  String message;
-//  List<String> keys;
-//
-//  public void setMessage(String message){
-//     this.message=message;
-// }
-//  public String getMessage(){
-//    return message;
-// }
-// public void setKeys(List<String> keys){
-//    this.keys=keys;
-// }
-// public List<String> getKeys(){
-//    return keys;
-// }
-//}
+class TrainingModel{
+  String message;
+  List<String> keys;
+
+  public void setMessage(String message){
+     this.message=message;
+ }
+  public String getMessage(){
+    return message;
+ }
+ public void setKeys(List<String> keys){
+    this.keys=keys;
+ }
+ public List<String> getKeys(){
+    return keys;
+ }
+}
 
