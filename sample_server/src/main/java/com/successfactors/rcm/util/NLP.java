@@ -1,5 +1,6 @@
 package com.successfactors.rcm.util;
 
+
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -22,6 +23,7 @@ public class NLP{
         synonym.put("search", "search");
         synonym.put("searching", "search");
         synonym.put("job", "job");
+        synonym.put("position", "job");
         synonym.put("done", "done");
         synonym.put("finish", "done");
     }
@@ -34,9 +36,10 @@ public class NLP{
         //looking for job
         //all map to search_job
         //done and finish all map to done
-        System.out.println(nlp.getKey("finding job"));
+        System.out.println(nlp.getKey("i want to find job"));
+
     }
-   
+
     public String getKey(String message){
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize,ssplit,pos,lemma,parse");
@@ -49,29 +52,36 @@ public class NLP{
         SemanticGraph dependencyParse = sentence.dependencyParse();
         StringBuilder sb = new StringBuilder();
         String rootTag=dependencyParse.getFirstRoot().tag();
+        System.out.println(rootTag);
         if(rootTag.equals("NN") ){
             String root = synonym.get(dependencyParse.getFirstRoot().word());
-            sb.append(root);
+            System.out.println(root);
+            String original = dependencyParse.getFirstRoot().word();
+            if(root!=null)
+              sb.append(root);
+            else
+              sb.append(original);
             for(int i=0; i<posTags.size();i++){
                  if(posTags.get(i).equals("NN")){
                      CoreLabel token = document.tokens().get(i);
-                     if(!token.word().equals(dependencyParse.getFirstRoot().word())){
+                     if(!token.word().equals(original)){
+                         String word=synonym.get(token.word()) != null ? synonym.get(token.word()) : token.word();
                          sb.append("_");
-                         sb.append(token.word());
+                         sb.append(word);
                      }
                  }
             }
             return sb.toString();
         }
         for(int i=0; i<posTags.size();i++){
-            if(posTags.get(i).equals("VB") || posTags.get(i).equals("VBG")){
-                CoreLabel token = document.tokens().get(i);
-                sb.append(synonym.get(token.word()));
+            CoreLabel token = document.tokens().get(i);
+            String word=synonym.get(token.word()) != null ? synonym.get(token.word()) : token.word();
+            if(posTags.get(i).equals("VB") || posTags.get(i).equals("VBG") ||posTags.get(i).equals("VBN")){
+                sb.append(word);
             }
             if(posTags.get(i).equals("NN")){
-                CoreLabel token = document.tokens().get(i);
                 sb.append("_");
-                sb.append(token.word());
+                sb.append(word);
             }
         }
 
