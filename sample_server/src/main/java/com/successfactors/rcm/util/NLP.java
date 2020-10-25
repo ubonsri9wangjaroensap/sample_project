@@ -52,10 +52,8 @@ public class NLP{
         SemanticGraph dependencyParse = sentence.dependencyParse();
         StringBuilder sb = new StringBuilder();
         String rootTag=dependencyParse.getFirstRoot().tag();
-        System.out.println(rootTag);
         if(rootTag.equals("NN") ){
             String root = synonym.get(dependencyParse.getFirstRoot().word());
-            System.out.println(root);
             String original = dependencyParse.getFirstRoot().word();
             if(root!=null)
               sb.append(root);
