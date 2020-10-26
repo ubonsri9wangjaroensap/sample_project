@@ -2,6 +2,7 @@ package com.successfactors.rcm;
 
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.*;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 import edu.stanford.nlp.ling.*;
@@ -20,6 +21,16 @@ public class Application {
     String home() {
         testConvertToJson();
         return "Welcome from server!";
+    }
+
+    @Bean
+    public Jedis getJedis() {
+        Jedis jedis = new Jedis("redis-server");
+        System.out.println("Connection to server sucessfully");
+        //check whether server is running or not
+        System.out.println("Server is running: "+jedis.ping());
+        //jedis.set("tutorial-name", "Redis tutorial");
+        return jedis;
     }
 
     @PostMapping("/training")
