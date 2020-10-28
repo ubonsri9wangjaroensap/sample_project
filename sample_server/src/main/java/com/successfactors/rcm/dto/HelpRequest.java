@@ -2,9 +2,19 @@ package com.successfactors.rcm.dto;
 
 public class HelpRequest {
 
+    private String message;
+
     private Object data;
 
     private String type;
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
     public Object getData() {
         return data;

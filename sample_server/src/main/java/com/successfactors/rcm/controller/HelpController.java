@@ -3,11 +3,13 @@ package com.successfactors.rcm.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
 import com.successfactors.rcm.dto.*;
 import com.successfactors.rcm.dto.dao.JobRequistionInfor;
 import com.successfactors.rcm.util.NLP;
 import com.successfactors.rcm.util.TalkTypeEnum;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,24 +48,32 @@ public class HelpController {
         try {
             switch (TalkTypeEnum.valueOf(type)) {
                 case TEXT:
-                    String requestData = (String) request.getData();
-                    String requestKey = nlp.getKey(requestData);
-                    String responseFromNlp = jedis.get(requestKey);
+                    String key = nlp.getKey(request.getMessage());
+                    String responseAsString = jedis.get(key);
+                    System.out.println(responseAsString);
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    FeedbackTrainRequest responseObj = objectMapper.readValue(responseAsString, FeedbackTrainRequest.class);
+                    return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
 
-                    response = new TextOrSearchResponse();
-                    response.setType(TalkTypeEnum.TEXT.toString());
-                    response.setMessage(responseFromNlp != null ? responseFromNlp : TextOrSearchResponse.REGULAR_TEXT_RESPONSE);
 
-                    break;
-                case JOB_SEARCH:
-                    // Emmy TODO
-                    responseFromNlp = jedis.get(type);
+//                    String requestData = (String) request.getData();
+//                    String requestKey = nlp.getKey(requestData);
+//                    String responseFromNlp = jedis.get(requestKey);
 
-                    response = new TextOrSearchResponse();
-                    response.setType(TalkTypeEnum.JOB_SEARCH.toString());
-                    response.setMessage(responseFromNlp != null ? responseFromNlp : TextOrSearchResponse.REGULAR_JOB_SEARCH_RESPONSE);
+//                    response = new TextOrSearchResponse();
+//                    response.setType(TalkTypeEnum.TEXT.toString());
+//                    response.setMessage(responseFromNlp != null ? responseFromNlp : TextOrSearchResponse.REGULAR_TEXT_RESPONSE);
 
-                    break;
+//                    break;
+//                case JOB_SEARCH:
+//                    // Emmy TODO
+//                    responseFromNlp = jedis.get(type);
+//
+//                    response = new TextOrSearchResponse();
+//                    response.setType(TalkTypeEnum.JOB_SEARCH.toString());
+//                    response.setMessage(responseFromNlp != null ? responseFromNlp : TextOrSearchResponse.REGULAR_JOB_SEARCH_RESPONSE);
+
+//                    break;
                 case JOB_LIST:
                     // Emmy TODO
                     response = new JobListHelpResponse();

@@ -2,33 +2,24 @@ package com.successfactors.rcm.dto;
 
 public class TrainRequest {
 
-    private String message;
+    private String key;
 
-    private String type;
+    private FeedbackTrainRequest response;
 
-    private String response;
-
-    public String getMessage() {
-        return message;
+    public String getKey() {
+        return key;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setKey(String key) {
+        this.key = key;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getResponse() {
+    public FeedbackTrainRequest getResponse() {
         return response;
     }
 
-    public void setResponse(String response) {
+    public void setResponse(FeedbackTrainRequest response) {
         this.response = response;
     }
+
 }
