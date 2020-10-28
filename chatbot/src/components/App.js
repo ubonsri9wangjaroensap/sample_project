@@ -25,14 +25,14 @@ class App extends Component {
   }
   async sendMessageRequest (msg, type){
     console.log("message sent: "+msg);
-    const response=await axios.post('http://localhost:8081/welcome',{
+    const response=await axios.post('http://localhost:8080/talk',{
       data:msg,
       type:type
     });
     console.log(response.data);
-    if(response.data.type==='feedback'){
+    if(response.data.type==='FEEDBACK'){
        this.generateFeedBackMessage(response.data);
-    }else if(response.data.type==='jobSearch'){
+    }else if(response.data.type==='JOB_SEARCH'){
        this.generateJobSearchMessage(response.data);
     }else{
     this.generateBotMessage(response.data);
@@ -43,7 +43,7 @@ class App extends Component {
     console.log(temp);
     temp.push(<TextMessage message={msg}/>)
     this.setState({messages:temp});
-    this.sendMessageRequest(msg, 'text');
+    this.sendMessageRequest(msg, 'TEXT');
   }
 
   generateBotMessage =(response)=>{

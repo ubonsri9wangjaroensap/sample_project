@@ -3,13 +3,11 @@ package com.successfactors.rcm.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
 import com.successfactors.rcm.dto.*;
 import com.successfactors.rcm.dto.dao.JobRequistionInfor;
 import com.successfactors.rcm.util.NLP;
 import com.successfactors.rcm.util.TalkTypeEnum;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +46,7 @@ public class HelpController {
         try {
             switch (TalkTypeEnum.valueOf(type)) {
                 case TEXT:
-                    String key = nlp.getKey(request.getMessage());
+                    String key = nlp.getKey(request.getData());
                     String responseAsString = jedis.get(key);
                     System.out.println(responseAsString);
                     ObjectMapper objectMapper = new ObjectMapper();
