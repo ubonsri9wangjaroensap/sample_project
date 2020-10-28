@@ -27,18 +27,18 @@ public class NLP{
         synonym.put("done", "done");
         synonym.put("finish", "done");
     }
-    public static void main(String[] args) {
-        NLP nlp = new NLP();
-        //i want to find job
-        //i am looking for job
-        //job search
-        //look for job
-        //looking for job
-        //all map to search_job
-        //done and finish all map to done
-        System.out.println(nlp.getKey("i want to find job"));
-
-    }
+//    public static void main(String[] args) {
+//        NLP nlp = new NLP();
+//        //i want to find job
+//        //i am looking for job
+//        //job search
+//        //look for job
+//        //looking for job
+//        //all map to search_job
+//        //done and finish all map to done
+//        System.out.println(nlp.getKey("i want to find job"));
+//
+//    }
 
     public String getKey(String message){
         Properties props = new Properties();
