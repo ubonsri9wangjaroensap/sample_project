@@ -2,6 +2,8 @@ package com.successfactors.rcm.controller;
 
 import com.google.gson.Gson;
 import com.successfactors.rcm.dto.feedback.FeedbackTrain;
+import com.successfactors.rcm.dto.JobList.JobListTrain;
+import com.successfactors.rcm.dto.jobsearch.JobSearch;
 import com.successfactors.rcm.dto.jobsearch.JobSearchTrain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,8 +30,8 @@ public class TrainingController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PostMapping("/jobSearch")
-    public ResponseEntity jobSearch(@RequestBody JobSearchTrain request)  {
+    @PostMapping("/jobList")
+    public ResponseEntity jobList(@RequestBody JobListTrain request)  {
         Gson gson = new Gson();
 
         if (request.getKey() != null) {
@@ -39,6 +41,17 @@ public class TrainingController {
         System.out.println(request.getKey());
         System.out.println(jedis.get(request.getKey()));
 
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/jobSearch")
+    public ResponseEntity jobSearch(@RequestBody JobSearchTrain request){
+        Gson gson = new Gson();
+        if (request.getKey() != null) {
+            jedis.set(request.getKey(),gson.toJson(request.getResponse()));
+        }
+        System.out.println(request.getKey());
+        System.out.println(jedis.get(request.getKey()));
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

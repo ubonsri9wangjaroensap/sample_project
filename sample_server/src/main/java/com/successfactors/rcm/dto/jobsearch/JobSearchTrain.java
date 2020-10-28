@@ -1,11 +1,12 @@
 package com.successfactors.rcm.dto.jobsearch;
 
-import com.successfactors.rcm.dto.feedback.Feedback;
+import com.successfactors.rcm.dto.dao.JobSearchResponse;
 
 public class JobSearchTrain {
+
     private String key;
 
-    private Feedback response;
+    private JobSearchResponse response;
 
     public String getKey() {
         return key;
@@ -15,11 +16,11 @@ public class JobSearchTrain {
         this.key = key;
     }
 
-    public Feedback getResponse() {
+    public JobSearchResponse getResponse() {
         return response;
     }
 
-    public void setResponse(Feedback response) {
-        this.response = response;
+    public void setResponse(JobSearchResponse message) {
+        this.response = message;
     }
 }

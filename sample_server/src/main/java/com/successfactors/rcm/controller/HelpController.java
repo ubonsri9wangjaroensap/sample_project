@@ -5,8 +5,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.successfactors.rcm.dto.*;
+import com.successfactors.rcm.dto.JobList.JobListRequest;
+import com.successfactors.rcm.dto.JobList.JobListTrain;
 import com.successfactors.rcm.dto.dao.JobRequistionInfor;
+import com.successfactors.rcm.dto.dao.JobSearchResponse;
 import com.successfactors.rcm.dto.feedback.Feedback;
+import com.successfactors.rcm.dto.jobsearch.JobSearch;
 import com.successfactors.rcm.util.NLP;
 import com.successfactors.rcm.util.TalkTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +44,53 @@ public class HelpController {
     @Autowired
     private NLP nlp;
 
+
+
+    @PostMapping("/jobReqSearch")
+    public ResponseEntity jobReqSearch(@RequestBody JobListRequest request) throws JsonProcessingException {
+        JobReqSearchAreaDto jobReqSearchAreaDto = request.getData();
+        //response from jedis
+        String responseAsString = jedis.get(request.getType());
+        System.out.println(responseAsString);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JobSearch responseOBject = objectMapper.readValue(responseAsString, JobSearch.class);
+        return new ResponseEntity<>(responseOBject, HttpStatus.CREATED);
+
+//                    try {
+//                        jobReqSearchAreaDto = new ObjectMapper().readValue(object, JobReqSearchAreaDto.class);
+//                    } catch (JsonProcessingException e) {
+//                        return new ResponseEntity<>("Can not parse object from filter fields " + request.getType(), HttpStatus.BAD_REQUEST);
+//                    }
+//                    URL urlJobReqQuery = new URL(buildJobReqQueryUrl(jobReqSearchAreaDto));
+//                    try {
+//                        HttpURLConnection conn = (HttpURLConnection) urlJobReqQuery.openConnection();
+//                        conn.setRequestMethod("GET");
+//                        conn.setRequestProperty("Accept", "application/json");
+//                        conn.setRequestProperty("Authorization", basicAuth);
+//                        conn.connect();
+//                        if (conn.getResponseCode() == 200 || conn.getResponseCode() == 201) {
+//                            response.setMessage("Here are the search results");
+//                            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+//                            StringBuilder output = new StringBuilder();
+//                            String line;
+//                            while ((line = br.readLine()) != null) {
+//                                output.append(line + "\n");
+//                            }
+//                            br.close();
+//                            String jsonObject = gson.toJson(output.toString());
+//                            List<JobRequistionInfor> response1 = new ObjectMapper().readValue(jsonObject ,new TypeReference<List<JobRequistionInfor>>(){});
+//                            response.setData(response1);
+//                        }else{
+//                            return new ResponseEntity<>("Connection Error, job requisition can not be found " + request.getType(), HttpStatus.BAD_REQUEST);
+//                        }
+//                        conn.disconnect();
+//                        } catch (ProtocolException protocolException) {
+//                        protocolException.printStackTrace();
+//                    } catch (IOException ioException) {
+//                        ioException.printStackTrace();
+//                    }
+//                    break;
+    }
     @PostMapping
     public ResponseEntity askForHelp(@RequestBody HelpRequest request) {
         AbstractHelpResponse response;
@@ -49,69 +100,26 @@ public class HelpController {
                 case TEXT:
                     String key = nlp.getKey(request.getData());
                     String responseAsString = jedis.get(key);
-                    System.out.println(responseAsString);
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    Feedback responseObj = objectMapper.readValue(responseAsString, Feedback.class);
-                    return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
-
-
-//                    String requestData = (String) request.getData();
-//                    String requestKey = nlp.getKey(requestData);
-//                    String responseFromNlp = jedis.get(requestKey);
-
-//                    response = new TextOrSearchResponse();
-//                    response.setType(TalkTypeEnum.TEXT.toString());
-//                    response.setMessage(responseFromNlp != null ? responseFromNlp : TextOrSearchResponse.REGULAR_TEXT_RESPONSE);
-
-//                    break;
-//                case JOB_SEARCH:
-//                    // Emmy TODO
-//                    responseFromNlp = jedis.get(type);
-//
-//                    response = new TextOrSearchResponse();
-//                    response.setType(TalkTypeEnum.JOB_SEARCH.toString());
-//                    response.setMessage(responseFromNlp != null ? responseFromNlp : TextOrSearchResponse.REGULAR_JOB_SEARCH_RESPONSE);
-
-//                    break;
-                case JOB_LIST:
-                    // Emmy TODO
-                    response = new JobListHelpResponse();
-                    Gson gson = new Gson();
-                    String object = gson.toJson(request.getData());
-                    JobReqSearchAreaDto jobReqSearchAreaDto = null;
-                    try {
-                        jobReqSearchAreaDto = new ObjectMapper().readValue(object, JobReqSearchAreaDto.class);
-                    } catch (JsonProcessingException e) {
-                        return new ResponseEntity<>("Can not parse object from filter fields " + request.getType(), HttpStatus.BAD_REQUEST);
+                    if(key.equals("done")){
+                        System.out.println(responseAsString);
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        Feedback responseObj = objectMapper.readValue(responseAsString, Feedback.class);
+                        return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
+                    } else if (key.equals("search_job")){
+//                        System.out.println(responseAsString);
+//                        ObjectMapper objectMapper = new ObjectMapper();
+//                        JobSearch responseObj = objectMapper.readValue(responseAsString, JobSearch.class);
+                        //return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
+                        System.out.println(responseAsString);
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        JobSearchResponse responseObj = objectMapper.readValue(responseAsString, JobSearchResponse.class);
+                        return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
+                    }  else{
+                        response = new TextOrSearchResponse();
+                        response.setType(TalkTypeEnum.TEXT.toString());
+                        response.setMessage( TextOrSearchResponse.REGULAR_TEXT_RESPONSE);
                     }
-                    URL urlJobReqQuery = new URL(buildJobReqQueryUrl(jobReqSearchAreaDto));
-                    try {
-                        HttpURLConnection conn = (HttpURLConnection) urlJobReqQuery.openConnection();
-                        conn.setRequestMethod("GET");
-                        conn.setRequestProperty("Accept", "application/json");
-                        conn.setRequestProperty("Authorization", basicAuth);
-                        conn.connect();
-                        if (conn.getResponseCode() == 200 || conn.getResponseCode() == 201) {
-                            response.setMessage("Here are the search results");
-                            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                            StringBuilder output = new StringBuilder();
-                            String line;
-                            while ((line = br.readLine()) != null) {
-                                output.append(line + "\n");
-                            }
-                            br.close();
-                            String jsonObject = gson.toJson(output.toString());
-                            List<JobRequistionInfor> response1 = new ObjectMapper().readValue(jsonObject ,new TypeReference<List<JobRequistionInfor>>(){});
-                            response.setData(response1);
-                        }else{
-                            return new ResponseEntity<>("Connection Error, job requisition can not be found " + request.getType(), HttpStatus.BAD_REQUEST);
-                        }
-                        conn.disconnect();
-                        } catch (ProtocolException protocolException) {
-                        protocolException.printStackTrace();
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
-                    }
+
                     break;
 
                 case FEEDBACK:
