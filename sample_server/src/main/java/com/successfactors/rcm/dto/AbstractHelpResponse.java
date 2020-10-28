@@ -6,6 +6,8 @@ public abstract class AbstractHelpResponse {
 
     private String message;
 
+    private Object data;
+
     public String getType() {
         return type;
     }
@@ -22,4 +24,11 @@ public abstract class AbstractHelpResponse {
         this.message = message;
     }
 
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
+    }
 }

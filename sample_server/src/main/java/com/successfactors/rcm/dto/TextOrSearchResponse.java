@@ -1,10 +1,5 @@
 package com.successfactors.rcm.dto;
 
-import org.codehaus.groovy.util.HashCodeHelper;
-
-import java.util.HashMap;
-import java.util.Map;
-
 public class TextOrSearchResponse extends AbstractHelpResponse{
 
     public static String REGULAR_TEXT_RESPONSE = "Sure, let see what I can do for you.";
