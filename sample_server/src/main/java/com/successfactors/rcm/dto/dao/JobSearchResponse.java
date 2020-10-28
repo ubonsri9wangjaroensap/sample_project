@@ -1,14 +1,9 @@
-package com.successfactors.rcm.dto.jobsearch;
+package com.successfactors.rcm.dto.dao;
 
-import com.successfactors.rcm.dto.dao.JobDetail;
-
-import java.util.List;
-
-public class JobSearch {
+public class JobSearchResponse {
 
     private String type;
 
-    private List<JobDetail> data;
 
     private String message;
 
@@ -20,14 +15,6 @@ public class JobSearch {
         this.type = type;
     }
 
-    public List<JobDetail> getData() {
-        return data;
-    }
-
-    public void setData(List<JobDetail> data) {
-        this.data = data;
-    }
-
     public String getMessage() {
         return message;
     }
@@ -35,5 +22,4 @@ public class JobSearch {
     public void setMessage(String message) {
         this.message = message;
     }
-
 }

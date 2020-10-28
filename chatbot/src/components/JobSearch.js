@@ -21,11 +21,11 @@ class JobSearch extends Component {
   handleOnClick=(e)=>{
     let data ={title:this.state.title,city:this.state.city,state:this.state.state,country:this.state.country};
     console.log(data);
-    this.sendSearchRequest(data,"jobList");
+    this.sendSearchRequest(data,"JOB_LIST");
   }
   async sendSearchRequest (data,type){
     console.log("message sent: "+data);
-    const response=await axios.post('http://localhost:8081/welcome',{
+    const response=await axios.post('http://localhost:8080/talk/jobReqSearch',{
       data:data,
       type:type
     });
