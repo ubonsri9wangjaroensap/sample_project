@@ -1,5 +1,6 @@
 package com.successfactors.rcm;
 
+import com.successfactors.rcm.util.NLP;
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.*;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RestController
 @EnableAutoConfiguration
 @CrossOrigin(origins = "http://localhost:3000")
+@SpringBootApplication
 public class Application {
 
     @RequestMapping("/welcome")
@@ -24,13 +26,18 @@ public class Application {
     }
 
     @Bean
-    public Jedis getJedis() {
+    public Jedis jedis() {
         Jedis jedis = new Jedis("redis-server");
         System.out.println("Connection to server sucessfully");
         //check whether server is running or not
         System.out.println("Server is running: "+jedis.ping());
         //jedis.set("tutorial-name", "Redis tutorial");
         return jedis;
+    }
+
+    @Bean
+    public NLP nlp() {
+        return new NLP();
     }
 
     @PostMapping("/training")

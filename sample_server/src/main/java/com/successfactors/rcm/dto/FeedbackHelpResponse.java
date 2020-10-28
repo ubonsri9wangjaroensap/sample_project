@@ -1,14 +1,11 @@
 package com.successfactors.rcm.dto;
 
+import com.successfactors.rcm.util.TalkTypeEnum;
+
 public class FeedbackHelpResponse extends AbstractHelpResponse {
 
-    String[] choices;
-
-    public String[] getChoices() {
-        return choices;
+    public FeedbackHelpResponse() {
+        super.setType(TalkTypeEnum.FEEDBACK.toString());
     }
 
-    public void setChoices(String[] choices) {
-        this.choices = choices;
-    }
 }

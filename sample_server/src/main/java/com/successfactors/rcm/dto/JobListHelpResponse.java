@@ -1,21 +1,11 @@
 package com.successfactors.rcm.dto;
 
-import com.successfactors.rcm.dto.dao.JobRequistionInfor;
+import com.successfactors.rcm.util.TalkTypeEnum;
 
-import java.util.List;
+public class JobListHelpResponse extends AbstractHelpResponse {
 
-public class JobListHelpResponse extends AbstractHelpResponse{
-
-    public List<JobRequistionInfor> getData() {
-        return data;
+    public JobListHelpResponse() {
+        super.setType(TalkTypeEnum.JOB_LIST.toString());
     }
-
-    public void setData(List<JobRequistionInfor> jobRequisitions) {
-        this.data = jobRequisitions;
-    }
-
-    private List<JobRequistionInfor> data;
-
-
 
 }
