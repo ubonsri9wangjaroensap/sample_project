@@ -1,10 +1,10 @@
-package com.successfactors.rcm.dto;
+package com.successfactors.rcm.dto.feedback;
 
-public class TrainRequest {
+public class FeedbackTrain {
 
     private String key;
 
-    private FeedbackTrainRequest response;
+    private Feedback response;
 
     public String getKey() {
         return key;
@@ -14,11 +14,11 @@ public class TrainRequest {
         this.key = key;
     }
 
-    public FeedbackTrainRequest getResponse() {
+    public Feedback getResponse() {
         return response;
     }
 
-    public void setResponse(FeedbackTrainRequest response) {
+    public void setResponse(Feedback response) {
         this.response = response;
     }
 

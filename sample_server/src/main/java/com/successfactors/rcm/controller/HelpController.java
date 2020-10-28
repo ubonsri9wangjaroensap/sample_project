@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.successfactors.rcm.dto.*;
 import com.successfactors.rcm.dto.dao.JobRequistionInfor;
+import com.successfactors.rcm.dto.feedback.Feedback;
 import com.successfactors.rcm.util.NLP;
 import com.successfactors.rcm.util.TalkTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class HelpController {
                     String responseAsString = jedis.get(key);
                     System.out.println(responseAsString);
                     ObjectMapper objectMapper = new ObjectMapper();
-                    FeedbackTrainRequest responseObj = objectMapper.readValue(responseAsString, FeedbackTrainRequest.class);
+                    Feedback responseObj = objectMapper.readValue(responseAsString, Feedback.class);
                     return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
 
 

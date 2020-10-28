@@ -1,6 +1,6 @@
-package com.successfactors.rcm.dto;
+package com.successfactors.rcm.dto.feedback;
 
-public class FeedbackTrainRequest {
+public class Feedback {
 
     private String type;
 
