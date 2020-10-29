@@ -2,17 +2,16 @@ package com.successfactors.rcm.controller;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.successfactors.rcm.dto.*;
 import com.successfactors.rcm.dto.JobList.JobListRequest;
 import com.successfactors.rcm.dto.applytojob.ApplyToJob;
-import com.successfactors.rcm.dto.dao.JobRequistionInfor;
 import com.successfactors.rcm.dto.feedback.Feedback;
 import com.successfactors.rcm.dto.jobsearch.JobSearch;
 import com.successfactors.rcm.util.NLP;
 import com.successfactors.rcm.util.TalkTypeEnum;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +25,6 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -36,7 +34,7 @@ public class HelpController {
 
     private final String BIZX_URL_PREFIX = "http://localhost:8080";
 
-    String userCredentials = "cgrant@BizXTest:demo101";
+    String userCredentials = "adminb1@RCMEC1142Hana:pwd";
     String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes()));
 
     @Autowired
@@ -93,6 +91,7 @@ public class HelpController {
                     }
         return new ResponseEntity<>(responseOBject, HttpStatus.CREATED);
     }
+
     @PostMapping
     public ResponseEntity askForHelp(@RequestBody HelpRequest request) throws IOException {
         AbstractHelpResponse response;
@@ -113,26 +112,6 @@ public class HelpController {
                         return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
                     }
 
-//                    if(key.equals("done")){
-//                        System.out.println(responseAsString);
-//                        ObjectMapper objectMapper = new ObjectMapper();
-//                        Feedback responseObj = objectMapper.readValue(responseAsString, Feedback.class);
-//                        return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
-//                    } else if (key.equals("search_job")){
-////                        System.out.println(responseAsString);
-////                        ObjectMapper objectMapper = new ObjectMapper();
-////                        JobSearch responseObj = objectMapper.readValue(responseAsString, JobSearch.class);
-//                        //return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
-//                        System.out.println(responseAsString);
-//                        ObjectMapper objectMapper = new ObjectMapper();
-//                        JobSearchResponse responseObj = objectMapper.readValue(responseAsString, JobSearchResponse.class);
-//                        return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
-//                    }  else{
-//                        response = new TextOrSearchResponse();
-//                        response.setType(TalkTypeEnum.TEXT.toString());
-//                        response.setMessage( TextOrSearchResponse.REGULAR_TEXT_RESPONSE);
-//                    }
-
                     break;
                 default:
                     return new ResponseEntity<>("Did not recognize request type " + request.getType(), HttpStatus.BAD_REQUEST);
@@ -145,8 +124,6 @@ public class HelpController {
 
     @PostMapping("/applyToJob")
     public ResponseEntity applyToJob(@RequestBody ApplyToJob request) throws IOException {
-//        URL url = new URL(BIZX_URL_PREFIX + "/odata/v2/JobApplication");
-
         URL url = new URL("https://qaautocand-api.lab-rot.ondemand.com/odata/v2/upsert?$format=json");
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -176,14 +153,14 @@ public class HelpController {
         return new ResponseEntity<>(responseCode == 200 ? "You have submitted the application! :)" : "Unable to submit application :(", HttpStatus.CREATED);
     }
 
-    private String buildJobApplyRequestBody(Map<String, String> jobAppDetails) {
+    private String buildJobApplyRequestBody(Map<String, String> jobAppDetails) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append("{")
                 .append("\"__metadata\": {")
-                .append("\"uri\": \"JobApplication(9724)\",")
+                .append("\"uri\": \"JobApplication\",")
                 .append("\"type\": \"SFOData.JobApplication\"")
                 .append("},")
-                .append("\"candidateId\": \"").append(jobAppDetails.get("candidateId")).append("\",")
+                .append("\"candidateId\": \"").append(getCandidateId(jobAppDetails.get("email"))).append("\",")
                 .append("\"jobReqId\": \"").append(jobAppDetails.get("jobReqId")).append("\",")
                 .append("\"contactEmail\": \"lebron.james@sapcom\"")
                 .append("}");
@@ -217,6 +194,37 @@ public class HelpController {
         urlJobReq = urlJobReq + sb.toString();
         System.out.println(urlJobReq);
         return urlJobReq;
+    }
+
+    private String getCandidateId(String email) throws IOException {
+        URL url = new URL("https://qaautocand-api.lab-rot.ondemand.com/odata/v2/Candidate?$format=json&$select&$filter=contactEmail%20eq%20'" + email + "'");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Accept", "application/json");
+        conn.setRequestProperty("Authorization", basicAuth);
+        conn.connect();
+        StringBuilder requestBody = new StringBuilder();
+        if (conn.getResponseCode() == 200) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String strCurrentLine;
+            while ((strCurrentLine = br.readLine()) != null) {
+                System.out.println(strCurrentLine);
+                requestBody.append(strCurrentLine);
+            }
+        } else {
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+            String strCurrentLine;
+            while ((strCurrentLine = br.readLine()) != null) {
+                System.out.println(strCurrentLine);
+            }
+        }
+        conn.disconnect();
+        System.out.println(requestBody.toString());
+        JSONObject jsonObject = new JSONObject(requestBody.toString());
+        JSONArray results = jsonObject.getJSONObject("d").getJSONArray("results");
+        JSONObject candidate = (JSONObject) results.get(0);
+
+        return (String) candidate.get("candidateId");
     }
 
 }
