@@ -6,11 +6,11 @@ class FeedBack extends Component {
 
   handleOnClick = (value)=>{
     console.log("value: "+value);
-    this.sendFeedbackRequest(value,'feedback');
+    this.sendFeedbackRequest(value,'FEEDBACK');
   }
 
   async sendFeedbackRequest (msg, type){
-    const response=await axios.post('http://localhost:9000/welcome',{
+    const response=await axios.post('http://localhost:9000/talk',{
       data:msg,
       type:type
     });

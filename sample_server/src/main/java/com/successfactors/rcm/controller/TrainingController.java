@@ -1,5 +1,6 @@
 package com.successfactors.rcm.controller;
 
+import io.swagger.annotations.ApiOperation;
 import org.json.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ public class TrainingController {
     private String TYPE = "TYPE";
 
     @PostMapping
+    @ApiOperation("Train the NLP model to return a certain response for a given 'key'. Takes a JSONString as input.")
     public ResponseEntity train(@RequestBody String request) {
         try {
             JSONObject jsonObject = new JSONObject(request);
