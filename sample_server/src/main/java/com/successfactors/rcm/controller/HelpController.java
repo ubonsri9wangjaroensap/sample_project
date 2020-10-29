@@ -2,10 +2,13 @@ package com.successfactors.rcm.controller;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.successfactors.rcm.dto.*;
 import com.successfactors.rcm.dto.JobList.JobListRequest;
 import com.successfactors.rcm.dto.applytojob.ApplyToJob;
+import com.successfactors.rcm.dto.dao.JobRequistionInfor;
 import com.successfactors.rcm.dto.feedback.Feedback;
 import com.successfactors.rcm.dto.jobsearch.JobSearch;
 import com.successfactors.rcm.util.NLP;
@@ -18,9 +21,12 @@ import redis.clients.jedis.Jedis;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -30,7 +36,7 @@ public class HelpController {
 
     private final String BIZX_URL_PREFIX = "http://localhost:8080";
 
-    String userCredentials = "cgrant@demo101";
+    String userCredentials = "cgrant@BizXTest:demo101";
     String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes()));
 
     @Autowired
@@ -40,49 +46,52 @@ public class HelpController {
     private NLP nlp;
 
     @PostMapping("/jobReqSearch")
-    public ResponseEntity jobReqSearch(@RequestBody JobListRequest request) throws JsonProcessingException {
+    public ResponseEntity jobReqSearch(@RequestBody JobListRequest request) throws JsonProcessingException, MalformedURLException {
         JobReqSearchAreaDto jobReqSearchAreaDto = request.getData();
         //response from jedis
         String responseAsString = jedis.get(request.getType());
-        System.out.println(responseAsString);
+        String key = request.getType();
+        System.out.println("response from jedis" +responseAsString);
+        System.out.println(jobReqSearchAreaDto.getLocale() + ""+jobReqSearchAreaDto.getTitle());
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         JobSearch responseOBject = objectMapper.readValue(responseAsString, JobSearch.class);
-        return new ResponseEntity<>(responseOBject, HttpStatus.CREATED);
-
-//                    try {
-//                        jobReqSearchAreaDto = new ObjectMapper().readValue(object, JobReqSearchAreaDto.class);
-//                    } catch (JsonProcessingException e) {
-//                        return new ResponseEntity<>("Can not parse object from filter fields " + request.getType(), HttpStatus.BAD_REQUEST);
-//                    }
-//                    URL urlJobReqQuery = new URL(buildJobReqQueryUrl(jobReqSearchAreaDto));
-//                    try {
-//                        HttpURLConnection conn = (HttpURLConnection) urlJobReqQuery.openConnection();
-//                        conn.setRequestMethod("GET");
-//                        conn.setRequestProperty("Accept", "application/json");
-//                        conn.setRequestProperty("Authorization", basicAuth);
-//                        conn.connect();
-//                        if (conn.getResponseCode() == 200 || conn.getResponseCode() == 201) {
-//                            response.setMessage("Here are the search results");
-//                            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//                            StringBuilder output = new StringBuilder();
-//                            String line;
-//                            while ((line = br.readLine()) != null) {
-//                                output.append(line + "\n");
-//                            }
-//                            br.close();
+        //String hardcoded = "https://qaautocand-api.lab-rot.ondemand.com/odata/v2/JobRequisitionLocale?$filter=externalTitle%20eq%20'402'%20and%20defaultLanguage%20eq%20'en_US'";
+                    URL urlJobReqQuery = new URL(buildJobReqQueryUrl(jobReqSearchAreaDto));
+                    try {
+                        HttpURLConnection conn = (HttpURLConnection) urlJobReqQuery.openConnection();
+                        conn.setRequestMethod("GET");
+                        conn.setRequestProperty("Accept", "application/json");
+                        conn.setRequestProperty("Content-Type", "application/json");
+                        conn.setRequestProperty("Authorization", "Basic YWRtaW5iMUBSQ01FQzExNDJIYW5hOnB3ZA==");
+                        conn.connect();
+                        System.out.println("start connect "  + conn.getContent());
+                        System.out.println(conn.getErrorStream());
+                        if (conn.getResponseCode() == 200 || conn.getResponseCode() == 201) {
+                           // response.setMessage("Here are the search results");
+                            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                            StringBuilder output = new StringBuilder();
+                            String line;
+                            while ((line = br.readLine()) != null) {
+                                output.append(line + "\n");
+                            }
+                            br.close();
+                            System.out.println(output.toString());
+                            // the part that read out the gson object
+//                            Gson gson = new Gson();
 //                            String jsonObject = gson.toJson(output.toString());
+//                            System.out.println(output.toString());
 //                            List<JobRequistionInfor> response1 = new ObjectMapper().readValue(jsonObject ,new TypeReference<List<JobRequistionInfor>>(){});
-//                            response.setData(response1);
-//                        }else{
-//                            return new ResponseEntity<>("Connection Error, job requisition can not be found " + request.getType(), HttpStatus.BAD_REQUEST);
-//                        }
-//                        conn.disconnect();
-//                        } catch (ProtocolException protocolException) {
-//                        protocolException.printStackTrace();
-//                    } catch (IOException ioException) {
-//                        ioException.printStackTrace();
-//                    }
-//                    break;
+                        }else{
+                            return new ResponseEntity<>("Connection Error, job requisition can not be found " + request.getType(), HttpStatus.BAD_REQUEST);
+                        }
+                        conn.disconnect();
+                        } catch (ProtocolException protocolException) {
+                        protocolException.printStackTrace();
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+        return new ResponseEntity<>(responseOBject, HttpStatus.CREATED);
     }
     @PostMapping
     public ResponseEntity askForHelp(@RequestBody HelpRequest request) throws IOException {
@@ -182,12 +191,31 @@ public class HelpController {
     }
 
     private String buildJobReqQueryUrl(JobReqSearchAreaDto jobReqSearchAreaDto){
-        String urlJobReq = BIZX_URL_PREFIX + "/odata/v2/JobRequisition";
+        String urlJobReq = "https://qaautocand-api.lab-rot.ondemand.com/odata/v2/JobRequisitionLocale";
         StringBuilder sb = new StringBuilder();
-        sb.append("?");
-        sb.append("title=").append(jobReqSearchAreaDto.getTitle()).append("&").append("city=").append(jobReqSearchAreaDto.getCity()).append("&");
-        sb.append("state=").append(jobReqSearchAreaDto.getState()).append("&").append("country=").append(jobReqSearchAreaDto.getCountry());
+        Boolean hasFielterBefore = false;
+        if (jobReqSearchAreaDto != null){
+            sb.append("?$filter=");
+            if(!jobReqSearchAreaDto.getTitle().equals(null)){
+                sb.append("externalTitle" + "%20eq%20" + "\'"+jobReqSearchAreaDto.getTitle()+"\'");
+                hasFielterBefore = true;
+            }
+            if(!jobReqSearchAreaDto.getLocale().equals(null)){
+                sb.append(hasFielterBefore ? "%20and%20": "");
+                sb.append("locale" + "%20eq%20" +"\'" + jobReqSearchAreaDto.getLocale()+ "\'");
+                hasFielterBefore = true;
+            }
+//            if(!jobReqSearchAreaDto.getCountry().equals(null)){
+//                sb.append(hasFielterBefore ? "%20and%20": "");
+//                sb.append("country" + "%20eq%20" + "\'" + jobReqSearchAreaDto.getCountry() + "\'");
+//            }
+//            if(!jobReqSearchAreaDto.getState().equals(null)){
+//                sb.append(hasFielterBefore ? "%20and%20": "");
+//                sb.append("state" + "%20eq%20" + "\'" + jobReqSearchAreaDto.getState() + "\'");
+//            }
+        }
         urlJobReq = urlJobReq + sb.toString();
+        System.out.println(urlJobReq);
         return urlJobReq;
     }
 

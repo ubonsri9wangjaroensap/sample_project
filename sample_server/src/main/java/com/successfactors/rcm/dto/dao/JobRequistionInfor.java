@@ -3,11 +3,11 @@ package com.successfactors.rcm.dto.dao;
 public class JobRequistionInfor {
         String jobReqId;
 
-        String jobReqTitle;
+        String jobTitle;
 
-        public JobRequistionInfor(String jobReqId, String jobReqTitle){
+        public JobRequistionInfor(String jobReqId, String jobTitle){
             this.jobReqId = jobReqId;
-            this.jobReqTitle = jobReqTitle;
+            this.jobTitle = jobTitle;
         }
 
         public String getJobReqId() {
@@ -18,12 +18,12 @@ public class JobRequistionInfor {
             this.jobReqId = jobReqId;
         }
 
-        public String getJobReqTitle() {
-            return jobReqTitle;
+        public String getJobTitle() {
+            return jobTitle;
         }
 
-        public void setJobReqTitle(String jobReqTitle) {
-            this.jobReqTitle = jobReqTitle;
+        public void setJobReqTitle(String jobTitle) {
+            this.jobTitle = jobTitle;
         }
         
 }
