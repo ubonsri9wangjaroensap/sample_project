@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.successfactors.rcm.dto.*;
 import com.successfactors.rcm.dto.JobList.JobListRequest;
 import com.successfactors.rcm.dto.applytojob.ApplyToJob;
+import com.successfactors.rcm.dto.dao.JobDetail;
 import com.successfactors.rcm.dto.feedback.Feedback;
 import com.successfactors.rcm.dto.jobsearch.JobSearch;
 import com.successfactors.rcm.util.NLP;
@@ -24,7 +25,9 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -54,7 +57,6 @@ public class HelpController {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         JobSearch responseOBject = objectMapper.readValue(responseAsString, JobSearch.class);
-        //String hardcoded = "https://qaautocand-api.lab-rot.ondemand.com/odata/v2/JobRequisitionLocale?$filter=externalTitle%20eq%20'402'%20and%20defaultLanguage%20eq%20'en_US'";
                     URL urlJobReqQuery = new URL(buildJobReqQueryUrl(jobReqSearchAreaDto));
                     try {
                         HttpURLConnection conn = (HttpURLConnection) urlJobReqQuery.openConnection();
@@ -63,10 +65,7 @@ public class HelpController {
                         conn.setRequestProperty("Content-Type", "application/json");
                         conn.setRequestProperty("Authorization", "Basic YWRtaW5iMUBSQ01FQzExNDJIYW5hOnB3ZA==");
                         conn.connect();
-                        System.out.println("start connect "  + conn.getContent());
-                        System.out.println(conn.getErrorStream());
                         if (conn.getResponseCode() == 200 || conn.getResponseCode() == 201) {
-                           // response.setMessage("Here are the search results");
                             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                             StringBuilder output = new StringBuilder();
                             String line;
@@ -74,12 +73,25 @@ public class HelpController {
                                 output.append(line + "\n");
                             }
                             br.close();
-                            System.out.println(output.toString());
-                            // the part that read out the gson object
-//                            Gson gson = new Gson();
-//                            String jsonObject = gson.toJson(output.toString());
-//                            System.out.println(output.toString());
-//                            List<JobRequistionInfor> response1 = new ObjectMapper().readValue(jsonObject ,new TypeReference<List<JobRequistionInfor>>(){});
+                            JSONObject jsonObject = new JSONObject(output.toString());
+                            System.out.println(jsonObject.toString());
+                            JSONObject jsonObj = jsonObject.getJSONObject("d");
+                            JSONArray listResult = jsonObj.getJSONArray("results");
+                            System.out.println(jsonObj.toString());
+                            System.out.println("first object from result: "+listResult.get(0).toString());
+                            List<JobDetail> responseData = new ArrayList<>();
+                            for(int i = 0; i< listResult.length();i++){
+                                JSONObject response = listResult.getJSONObject(i);
+                                JobDetail data = new JobDetail();
+                                data.setId(response.get("jobReqId").toString());
+                                data.setTitle(response.get("jobTitle").toString());
+                                responseData.add(data);
+                            }
+                            responseOBject.setData(responseData);
+                            JSONObject returnValue = new JSONObject(responseOBject);
+                            System.out.println(returnValue.toString());
+                            jedis.set(request.getType(),returnValue.toString());
+
                         }else{
                             return new ResponseEntity<>("Connection Error, job requisition can not be found " + request.getType(), HttpStatus.BAD_REQUEST);
                         }
