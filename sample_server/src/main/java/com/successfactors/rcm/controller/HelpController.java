@@ -7,6 +7,7 @@ import com.successfactors.rcm.dto.*;
 import com.successfactors.rcm.dto.JobList.JobListRequest;
 import com.successfactors.rcm.dto.applytojob.ApplyToJob;
 import com.successfactors.rcm.dto.feedback.Feedback;
+import com.successfactors.rcm.dto.feedback.ThankYouForFeedback;
 import com.successfactors.rcm.dto.jobsearch.JobSearch;
 import com.successfactors.rcm.util.NLP;
 import com.successfactors.rcm.util.TalkTypeEnum;
@@ -94,25 +95,31 @@ public class HelpController {
 
     @PostMapping
     public ResponseEntity askForHelp(@RequestBody HelpRequest request) throws IOException {
-        AbstractHelpResponse response;
-        String type = request.getType();
-        try {
-            switch (TalkTypeEnum.valueOf(type)) {
-                case TEXT:
-                    String key = nlp.getKey(request.getData());
-                    String responseAsString = jedis.hget(key, "RESPONSE");
-                    String responseType = jedis.hget(key, "TYPE").replace("\\", "");
+        String responseAsString;
+        ObjectMapper objectMapper = new ObjectMapper();
+        JSONObject jsonObject;
 
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+        try {
+            switch (TalkTypeEnum.valueOf(request.getType())) {
+                case TEXT:
+                    responseAsString = jedis.get(nlp.getKey(request.getData()));
+
+                    jsonObject = new JSONObject(responseAsString);
+                    String responseType = jsonObject.getString("type");
 
                     if (responseType.equals("FEEDBACK")) {
-                        Feedback responseObj = objectMapper.readValue(responseAsString.replace("\\", ""), Feedback.class);
+                        Feedback responseObj = objectMapper.readValue(responseAsString, Feedback.class);
                         System.out.println(responseAsString);
                         return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
                     }
 
                     break;
+                case FEEDBACK:
+                    responseAsString = jedis.get(request.getType());
+                    if (responseAsString != null) {
+                        ThankYouForFeedback responseObj = objectMapper.readValue(responseAsString, ThankYouForFeedback.class);
+                        return new ResponseEntity<>(responseObj, HttpStatus.OK);
+                    }
                 default:
                     return new ResponseEntity<>("Did not recognize request type " + request.getType(), HttpStatus.BAD_REQUEST);
             }

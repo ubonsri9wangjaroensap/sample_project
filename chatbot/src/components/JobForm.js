@@ -7,7 +7,7 @@ class JobForm extends Component {
   handleOnClick=(e)=>{
     let data ={username:this.state.username,password:this.state.password,jobReqId:this.props.id};
     console.log(data);
-    this.sendApplicationRequest(data,"jobApplication");
+    this.sendApplicationRequest(data,"APPLY_TO_JOB");
   }
   async sendApplicationRequest (data,type){
     console.log("message sent: "+data);
