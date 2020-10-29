@@ -10,7 +10,7 @@ class FeedBack extends Component {
   }
 
   async sendFeedbackRequest (msg, type){
-    const response=await axios.post('http://localhost:8081/welcome',{
+    const response=await axios.post('http://localhost:9000/welcome',{
       data:msg,
       type:type
     });

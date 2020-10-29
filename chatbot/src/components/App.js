@@ -25,7 +25,7 @@ class App extends Component {
   }
   async sendMessageRequest (msg, type){
     console.log("message sent: "+msg);
-    const response=await axios.post('http://localhost:8080/talk',{
+    const response=await axios.post('http://localhost:9000/talk',{
       data:msg,
       type:type
     });

@@ -1,5 +1,6 @@
 package com.successfactors.rcm.controller;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Base64;
@@ -92,33 +94,44 @@ public class HelpController {
 //                    break;
     }
     @PostMapping
-    public ResponseEntity askForHelp(@RequestBody HelpRequest request) {
+    public ResponseEntity askForHelp(@RequestBody HelpRequest request) throws IOException {
         AbstractHelpResponse response;
         String type = request.getType();
         try {
             switch (TalkTypeEnum.valueOf(type)) {
                 case TEXT:
                     String key = nlp.getKey(request.getData());
-                    String responseAsString = jedis.get(key);
-                    if(key.equals("done")){
-                        System.out.println(responseAsString);
+                    String responseAsString = jedis.hget(key, "RESPONSE");
+                    String responseType = jedis.hget(key, "TYPE").replace("\\", "");
+
+                    if (responseType.equals("FEEDBACK")) {
                         ObjectMapper objectMapper = new ObjectMapper();
-                        Feedback responseObj = objectMapper.readValue(responseAsString, Feedback.class);
+                        objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+
+                        Feedback responseObj = objectMapper.readValue(responseAsString.replace("\\", ""), Feedback.class);
+                        System.out.println(responseAsString);
                         return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
-                    } else if (key.equals("search_job")){
+                    }
+
+//                    if(key.equals("done")){
 //                        System.out.println(responseAsString);
 //                        ObjectMapper objectMapper = new ObjectMapper();
-//                        JobSearch responseObj = objectMapper.readValue(responseAsString, JobSearch.class);
-                        //return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
-                        System.out.println(responseAsString);
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        JobSearchResponse responseObj = objectMapper.readValue(responseAsString, JobSearchResponse.class);
-                        return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
-                    }  else{
-                        response = new TextOrSearchResponse();
-                        response.setType(TalkTypeEnum.TEXT.toString());
-                        response.setMessage( TextOrSearchResponse.REGULAR_TEXT_RESPONSE);
-                    }
+//                        Feedback responseObj = objectMapper.readValue(responseAsString, Feedback.class);
+//                        return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
+//                    } else if (key.equals("search_job")){
+////                        System.out.println(responseAsString);
+////                        ObjectMapper objectMapper = new ObjectMapper();
+////                        JobSearch responseObj = objectMapper.readValue(responseAsString, JobSearch.class);
+//                        //return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
+//                        System.out.println(responseAsString);
+//                        ObjectMapper objectMapper = new ObjectMapper();
+//                        JobSearchResponse responseObj = objectMapper.readValue(responseAsString, JobSearchResponse.class);
+//                        return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
+//                    }  else{
+//                        response = new TextOrSearchResponse();
+//                        response.setType(TalkTypeEnum.TEXT.toString());
+//                        response.setMessage( TextOrSearchResponse.REGULAR_TEXT_RESPONSE);
+//                    }
 
                     break;
 
@@ -147,12 +160,10 @@ public class HelpController {
             }
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>("Invalid request type " + request.getType(), HttpStatus.BAD_REQUEST);
-        } catch (IOException e) {
-            return new ResponseEntity<>("Something unexpected occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>("asdsads", HttpStatus.CREATED);
     }
+
 
 
     private String buildJobReqQueryUrl(JobReqSearchAreaDto jobReqSearchAreaDto){

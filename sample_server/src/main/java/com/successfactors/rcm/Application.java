@@ -28,10 +28,11 @@ public class Application {
     @Bean
     public Jedis jedis() {
         Jedis jedis = new Jedis("redis-server");
+        jedis.flushAll();
         System.out.println("Connection to server sucessfully");
         //check whether server is running or not
         System.out.println("Server is running: "+jedis.ping());
-        //jedis.set("tutorial-name", "Redis tutorial");
+        //jedis.set("tutorial-name", "Redocker-dis tutorial");
         return jedis;
     }
 

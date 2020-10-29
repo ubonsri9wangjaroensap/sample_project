@@ -1,10 +1,6 @@
 package com.successfactors.rcm.controller;
 
-import com.google.gson.Gson;
-import com.successfactors.rcm.dto.feedback.FeedbackTrain;
-import com.successfactors.rcm.dto.JobList.JobListTrain;
-import com.successfactors.rcm.dto.jobsearch.JobSearch;
-import com.successfactors.rcm.dto.jobsearch.JobSearchTrain;
+import com.successfactors.rcm.dto.feedback.TrainRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,54 +15,21 @@ public class TrainingController {
     @Autowired
     private Jedis jedis;
 
-    @PostMapping("/feedback")
-    public ResponseEntity feedback(@RequestBody FeedbackTrain request)  {
-        Gson gson = new Gson();
+    private String RESPONSE = "RESPONSE";
 
+    private String TYPE = "TYPE";
+
+    @PostMapping
+    public ResponseEntity train(@RequestBody TrainRequest request) {
         if (request.getKey() != null) {
-            jedis.set(request.getKey(), gson.toJson(request.getResponse()));
+            jedis.hset(request.getKey(), RESPONSE, request.getResponse());
+            jedis.hset(request.getKey(), TYPE, request.getType());
         }
 
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        System.out.println(jedis.hget(request.getKey(), RESPONSE));
+        System.out.println(jedis.hget(request.getKey(), TYPE));
+
+        return new ResponseEntity<>("Training data has been added to the model", HttpStatus.CREATED);
     }
 
-    @PostMapping("/jobList")
-    public ResponseEntity jobList(@RequestBody JobListTrain request)  {
-        Gson gson = new Gson();
-
-        if (request.getKey() != null) {
-            jedis.set(request.getKey(), gson.toJson(request.getResponse()));
-        }
-
-        System.out.println(request.getKey());
-        System.out.println(jedis.get(request.getKey()));
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @PostMapping("/jobSearch")
-    public ResponseEntity jobSearch(@RequestBody JobSearchTrain request){
-        Gson gson = new Gson();
-        if (request.getKey() != null) {
-            jedis.set(request.getKey(),gson.toJson(request.getResponse()));
-        }
-        System.out.println(request.getKey());
-        System.out.println(jedis.get(request.getKey()));
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @PostMapping("/applyToJob")
-    public ResponseEntity applyToJob(@RequestBody FeedbackTrain request)  {
-        Gson gson = new Gson();
-
-        if (request.getKey() != null) {
-            jedis.set(request.getKey(), gson.toJson(request.getResponse()));
-        }
-
-        System.out.println(request.getKey());
-        System.out.println(jedis.get(request.getKey()));
-
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
 }

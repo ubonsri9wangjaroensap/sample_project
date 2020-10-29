@@ -25,7 +25,7 @@ class JobSearch extends Component {
   }
   async sendSearchRequest (data,type){
     console.log("message sent: "+data);
-    const response=await axios.post('http://localhost:8080/talk/jobReqSearch',{
+    const response=await axios.post('http://localhost:9000/talk/jobReqSearch',{
       data:data,
       type:type
     });
