@@ -2,14 +2,10 @@ package com.successfactors.rcm.controller;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.successfactors.rcm.dto.*;
 import com.successfactors.rcm.dto.JobList.JobListRequest;
-import com.successfactors.rcm.dto.JobList.JobListTrain;
-import com.successfactors.rcm.dto.dao.JobRequistionInfor;
-import com.successfactors.rcm.dto.dao.JobSearchResponse;
+import com.successfactors.rcm.dto.applytojob.ApplyToJob;
 import com.successfactors.rcm.dto.feedback.Feedback;
 import com.successfactors.rcm.dto.jobsearch.JobSearch;
 import com.successfactors.rcm.util.NLP;
@@ -20,15 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import redis.clients.jedis.Jedis;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/talk")
@@ -45,8 +38,6 @@ public class HelpController {
 
     @Autowired
     private NLP nlp;
-
-
 
     @PostMapping("/jobReqSearch")
     public ResponseEntity jobReqSearch(@RequestBody JobListRequest request) throws JsonProcessingException {
@@ -104,10 +95,10 @@ public class HelpController {
                     String responseAsString = jedis.hget(key, "RESPONSE");
                     String responseType = jedis.hget(key, "TYPE").replace("\\", "");
 
-                    if (responseType.equals("FEEDBACK")) {
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
 
+                    if (responseType.equals("FEEDBACK")) {
                         Feedback responseObj = objectMapper.readValue(responseAsString.replace("\\", ""), Feedback.class);
                         System.out.println(responseAsString);
                         return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
@@ -134,27 +125,6 @@ public class HelpController {
 //                    }
 
                     break;
-
-                case FEEDBACK:
-                    String responseMessage = jedis.get(type);
-
-                    response = new FeedbackHelpResponse();
-                    response.setMessage(responseMessage);
-                    response.setData(new String[]{"Poor", "Average", "Good"});
-
-                    break;
-                case APPLY_TO_JOB:
-                    response = new ApplyToJobHelpResponse();
-                    URL url = new URL(BIZX_URL_PREFIX + "/odata/v2/JobApplication");
-
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("GET");
-                    conn.setRequestProperty("Accept", "application/json");
-                    conn.setRequestProperty("Authorization", basicAuth);
-                    response.setMessage(conn.getResponseCode() == 200 ? "Your application has been sent!" : "Failed to apply :(");
-                    conn.disconnect();
-
-                    break;
                 default:
                     return new ResponseEntity<>("Did not recognize request type " + request.getType(), HttpStatus.BAD_REQUEST);
             }
@@ -164,7 +134,52 @@ public class HelpController {
         return new ResponseEntity<>("asdsads", HttpStatus.CREATED);
     }
 
+    @PostMapping("/applyToJob")
+    public ResponseEntity applyToJob(@RequestBody ApplyToJob request) throws IOException {
+//        URL url = new URL(BIZX_URL_PREFIX + "/odata/v2/JobApplication");
 
+        URL url = new URL("https://qaautocand-api.lab-rot.ondemand.com/odata/v2/upsert?$format=json");
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Accept", "application/json");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Authorization", "Basic YWRtaW5iMUBSQ01FQzExNDJIYW5hOnB3ZA==");
+        conn.setDoOutput(true);
+        OutputStream os = conn.getOutputStream();
+        OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+        osw.write(buildJobApplyRequestBody(request.getData()));
+        osw.flush();
+        osw.close();
+        os.close();
+        conn.connect();
+        int responseCode = conn.getResponseCode();
+        System.out.println(conn.getResponseMessage());
+        if (responseCode != 200) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+            String strCurrentLine;
+            while ((strCurrentLine = br.readLine()) != null) {
+                System.out.println(strCurrentLine);
+            }
+        }
+        conn.disconnect();
+
+        return new ResponseEntity<>(responseCode == 200 ? "You have submitted the application! :)" : "Unable to submit application :(", HttpStatus.CREATED);
+    }
+
+    private String buildJobApplyRequestBody(Map<String, String> jobAppDetails) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{")
+                .append("\"__metadata\": {")
+                .append("\"uri\": \"JobApplication(9724)\",")
+                .append("\"type\": \"SFOData.JobApplication\"")
+                .append("},")
+                .append("\"candidateId\": \"").append(jobAppDetails.get("candidateId")).append("\",")
+                .append("\"jobReqId\": \"").append(jobAppDetails.get("jobReqId")).append("\",")
+                .append("\"contactEmail\": \"lebron.james@sapcom\"")
+                .append("}");
+        return sb.toString();
+    }
 
     private String buildJobReqQueryUrl(JobReqSearchAreaDto jobReqSearchAreaDto){
         String urlJobReq = BIZX_URL_PREFIX + "/odata/v2/JobRequisition";
