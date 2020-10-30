@@ -196,22 +196,13 @@ public class HelpController {
                 sb.append("externalTitle" + "%20eq%20" + "\'"+jobReqSearchAreaDto.getTitle()+"\'");
                 hasFielterBefore = true;
             }
-            if(!jobReqSearchAreaDto.getLocale().equals(null)){
+            if(!jobReqSearchAreaDto.getCity().equals(null)){
                 sb.append(hasFielterBefore ? "%20and%20": "");
-                sb.append("locale" + "%20eq%20" +"\'" + jobReqSearchAreaDto.getLocale()+ "\'");
+                sb.append("locale" + "%20eq%20" +"\'" + jobReqSearchAreaDto.getCity()+ "\'");
                 hasFielterBefore = true;
             }
-//            if(!jobReqSearchAreaDto.getCountry().equals(null)){
-//                sb.append(hasFielterBefore ? "%20and%20": "");
-//                sb.append("country" + "%20eq%20" + "\'" + jobReqSearchAreaDto.getCountry() + "\'");
-//            }
-//            if(!jobReqSearchAreaDto.getState().equals(null)){
-//                sb.append(hasFielterBefore ? "%20and%20": "");
-//                sb.append("state" + "%20eq%20" + "\'" + jobReqSearchAreaDto.getState() + "\'");
-//            }
         }
         urlJobReq = urlJobReq + sb.toString();
-        System.out.println(urlJobReq);
         return urlJobReq;
     }
 
