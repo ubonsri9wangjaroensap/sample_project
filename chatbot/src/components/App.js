@@ -23,6 +23,10 @@ class App extends Component {
   onJobSearchSubmit = (msg) =>{
     this.generateJobListMessage(msg);
   }
+  onWaiting = (show)=>{
+    this.generateSpinner(show);
+  }
+
   async sendMessageRequest (msg, type){
     console.log("message sent: "+msg);
     const response=await axios.post('http://localhost:9000/talk',{
@@ -52,7 +56,15 @@ class App extends Component {
     temp.push(<BotMessage message={response.message}/>);
     this.setState({messages:temp});
   }
-
+  generateSpinner = (show) =>{
+    temp = this.state.messages;
+    if(show){
+     temp.push(<Spinner show={show}/>);
+   }else{
+     temp.pop();
+   }
+    this.setState({message:temp});
+  }
   generateJobListMessage = (response)=>{
     console.log(response);
     temp=this.state.messages;
@@ -69,7 +81,7 @@ class App extends Component {
   generateJobSearchMessage =(response)=>{
     temp=this.state.messages;
     temp.push(<JobSearch message={response.message} onJobSearchSubmit={this.onJobSearchSubmit}
-      onStartSubmitSearch={this.onStartSubmitSearch}/>);
+      onWaiting={this.onWaiting}/>);
     this.setState({messages:temp});
   }
   render(){

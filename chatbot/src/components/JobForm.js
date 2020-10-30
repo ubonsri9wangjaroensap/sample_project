@@ -3,10 +3,11 @@ import axios from 'axios';
 
 class JobForm extends Component {
 
-  state={username:'',password:'',result:''};
+  state={username:'',password:'',result:'', start:false};
   handleOnClick=(e)=>{
     let data ={username:this.state.username,password:this.state.password,jobReqId:this.props.id};
     console.log(data);
+    this.setState({start:true});
     this.sendApplicationRequest(data,"APPLY_TO_JOB");
   }
   async sendApplicationRequest (data,type){
@@ -15,8 +16,7 @@ class JobForm extends Component {
       data:data,
       type:type
     });
-
-    this.setState({result:response.data.message});
+    this.setState({result:response.data.message,start:false});
   }
      render(){
        if(!this.props.title){
@@ -40,6 +40,11 @@ class JobForm extends Component {
     <div style={{display: this.state.result!=='' ? 'inline' : 'none', width:120,
       color:this.state.result==='Success'?'green':'red', fontSize:20}}>
       &nbsp;&nbsp;&nbsp;&nbsp;<b>{this.state.result}</b>
+    </div>
+    <div style={{display: this.state.start ? 'inline' : 'none', width:120}}>
+    <div class="ui active dimmer" style={{backgroundColor: '#c2bebe', opacity: 0.5}}>
+      <div class="ui loader"></div>
+    </div>
     </div>
     </div>
       );

@@ -21,6 +21,7 @@ class JobSearch extends Component {
   handleOnClick=(e)=>{
     let data ={title:this.state.title,city:this.state.city,state:this.state.state,country:this.state.country};
     console.log(data);
+    this.props.onWaiting(true);
     this.sendSearchRequest(data,"JOB_LIST");
   }
   async sendSearchRequest (data,type){
@@ -29,7 +30,7 @@ class JobSearch extends Component {
       data:data,
       type:type
     });
-
+    this.props.onWaiting(false);
     this.props.onJobSearchSubmit(response.data);
   }
   render(){
