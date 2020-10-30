@@ -1,12 +1,9 @@
-package com.successfactors.rcm.dto;
+package com.successfactors.rcm.dto.jobsearch;
 
-public abstract class AbstractHelpResponse {
-
+public class JobSearchInputForm {
     private String type;
 
     private String message;
-
-    private Object data;
 
     public String getType() {
         return type;
@@ -22,13 +19,5 @@ public abstract class AbstractHelpResponse {
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
     }
 }

@@ -1,10 +1,14 @@
-package com.successfactors.rcm.dto.feedback;
+package com.successfactors.rcm.dto.applytojob;
 
-public class ThankYouForFeedback {
+public class ApplyToJobResponse {
 
     private String type;
 
     private String message;
+
+    public ApplyToJobResponse() {
+        this.type = "jobApplication";
+    }
 
     public String getType() {
         return type;

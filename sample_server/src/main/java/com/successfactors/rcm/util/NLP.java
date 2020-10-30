@@ -26,6 +26,10 @@ public class NLP{
         synonym.put("position", "job");
         synonym.put("done", "done");
         synonym.put("finish", "done");
+        synonym.put("hello", "greet");
+        synonym.put("hi", "greet");
+        synonym.put("hola", "greet");
+        synonym.put("nihao", "greet");
     }
 //    public static void main(String[] args) {
 //        NLP nlp = new NLP();

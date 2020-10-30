@@ -1,18 +1,29 @@
 package com.successfactors.rcm.dto;
 
 
-public class TextOrSearchResponse extends AbstractHelpResponse{
+public class TextOrSearchResponse {
 
-    public static String REGULAR_TEXT_RESPONSE = "Sure, let see what I can do for you.";
+    private String type;
 
-    public static String REGULAR_JOB_SEARCH_RESPONSE = "Please provide search criteria below";
+    private String message;
 
-    public void setRegularTextResponse(){
-       super.setMessage(REGULAR_TEXT_RESPONSE);
+    public TextOrSearchResponse() {
+        this.type = "TEXT";
     }
 
-    public void setRegularJobSearchResponse(){
-        super.setMessage(REGULAR_JOB_SEARCH_RESPONSE);
+    public String getType() {
+        return type;
     }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

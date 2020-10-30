@@ -12,7 +12,7 @@ class JobForm extends Component {
   }
   async sendApplicationRequest (data,type){
     console.log("message sent: "+data);
-    const response=await axios.post('http://localhost:8081/welcome',{
+    const response=await axios.post('http://localhost:9000/talk/applyToJob',{
       data:data,
       type:type
     });

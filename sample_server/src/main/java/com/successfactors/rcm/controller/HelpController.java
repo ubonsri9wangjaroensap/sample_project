@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.successfactors.rcm.dto.*;
 import com.successfactors.rcm.dto.JobList.JobListRequest;
 import com.successfactors.rcm.dto.applytojob.ApplyToJob;
+import com.successfactors.rcm.dto.applytojob.ApplyToJobResponse;
 import com.successfactors.rcm.dto.dao.JobDetail;
 import com.successfactors.rcm.dto.feedback.Feedback;
 import com.successfactors.rcm.dto.feedback.ThankYouForFeedback;
 import com.successfactors.rcm.dto.jobsearch.JobSearch;
+import com.successfactors.rcm.dto.jobsearch.JobSearchInputForm;
 import com.successfactors.rcm.util.NLP;
 import com.successfactors.rcm.util.TalkTypeEnum;
 import org.json.JSONArray;
@@ -33,7 +35,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/talk")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "http://localhost:3000")
 public class HelpController {
 
     private final String BIZX_URL_PREFIX = "http://localhost:8080";
@@ -54,7 +56,6 @@ public class HelpController {
         String responseAsString = jedis.get(request.getType());
         String key = request.getType();
         System.out.println("response from jedis" +responseAsString);
-        System.out.println(jobReqSearchAreaDto.getLocale() + ""+jobReqSearchAreaDto.getTitle());
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         JobSearch responseOBject = objectMapper.readValue(responseAsString, JobSearch.class);
@@ -79,7 +80,6 @@ public class HelpController {
                             JSONObject jsonObj = jsonObject.getJSONObject("d");
                             JSONArray listResult = jsonObj.getJSONArray("results");
                             System.out.println(jsonObj.toString());
-                            System.out.println("first object from result: "+listResult.get(0).toString());
                             List<JobDetail> responseData = new ArrayList<>();
                             for(int i = 0; i< listResult.length();i++){
                                 JSONObject response = listResult.getJSONObject(i);
@@ -116,6 +116,15 @@ public class HelpController {
                 case TEXT:
                     responseAsString = jedis.get(nlp.getKey(request.getData()));
 
+                    System.out.println(nlp.getKey(request.getData()));
+                    System.out.println(responseAsString);
+
+                    if (responseAsString == null) {
+                        TextOrSearchResponse response = new TextOrSearchResponse();
+                        response.setMessage("We did not understand your request");
+                        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+                    }
+
                     jsonObject = new JSONObject(responseAsString);
                     String responseType = jsonObject.getString("type");
 
@@ -123,9 +132,16 @@ public class HelpController {
                         Feedback responseObj = objectMapper.readValue(responseAsString, Feedback.class);
                         System.out.println(responseAsString);
                         return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
+                    } else if (responseType.equals("JOB_SEARCH")) {
+                        JobSearchInputForm responseObj = objectMapper.readValue(responseAsString, JobSearchInputForm.class);
+                        System.out.println(responseAsString);
+                        return new ResponseEntity<>(responseObj, HttpStatus.CREATED);
+                    } else {
+                        TextOrSearchResponse responseObj = new TextOrSearchResponse();
+                        responseObj.setMessage("We don't understand your message :(");
+                        return new ResponseEntity(responseObj, HttpStatus.CREATED);
                     }
 
-                    break;
                 case FEEDBACK:
                     responseAsString = jedis.get(request.getType());
                     if (responseAsString != null) {
@@ -133,15 +149,19 @@ public class HelpController {
                         return new ResponseEntity<>(responseObj, HttpStatus.OK);
                     }
                 default:
-                    return new ResponseEntity<>("Did not recognize request type " + request.getType(), HttpStatus.BAD_REQUEST);
+                    TextOrSearchResponse response = new TextOrSearchResponse();
+                    response.setMessage("Did not recognize request type " + request.getType());
+                    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>("Invalid request type " + request.getType(), HttpStatus.BAD_REQUEST);
+            TextOrSearchResponse response = new TextOrSearchResponse();
+            response.setMessage("Invalid request type " + request.getType());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("asdsads", HttpStatus.CREATED);
     }
 
     @PostMapping("/applyToJob")
+    @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity applyToJob(@RequestBody ApplyToJob request) throws IOException {
         URL url = new URL("https://qaautocand-api.lab-rot.ondemand.com/odata/v2/upsert?$format=json");
 
@@ -151,6 +171,9 @@ public class HelpController {
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Authorization", "Basic YWRtaW5iMUBSQ01FQzExNDJIYW5hOnB3ZA==");
         conn.setDoOutput(true);
+
+        System.out.println("Inside applyToJob");
+
         OutputStream os = conn.getOutputStream();
         OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
         osw.write(buildJobApplyRequestBody(request.getData()));
@@ -159,6 +182,7 @@ public class HelpController {
         os.close();
         conn.connect();
         int responseCode = conn.getResponseCode();
+        System.out.println("JobApplication OData, response is " + conn.getResponseCode());
         System.out.println(conn.getResponseMessage());
         if (responseCode != 200) {
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
@@ -166,10 +190,22 @@ public class HelpController {
             while ((strCurrentLine = br.readLine()) != null) {
                 System.out.println(strCurrentLine);
             }
+        } else {
+            StringBuilder requestBody = new StringBuilder();
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String strCurrentLine;
+            while ((strCurrentLine = br.readLine()) != null) {
+                System.out.println(strCurrentLine);
+                requestBody.append(strCurrentLine);
+            }
+            System.out.println(requestBody.toString());
         }
         conn.disconnect();
 
-        return new ResponseEntity<>(responseCode == 200 ? "You have submitted the application! :)" : "Unable to submit application :(", HttpStatus.CREATED);
+        ApplyToJobResponse response = new ApplyToJobResponse();
+        response.setMessage(responseCode == 200 ? "Success" : "Unable to submit application :(");
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     private String buildJobApplyRequestBody(Map<String, String> jobAppDetails) throws IOException {
@@ -179,9 +215,8 @@ public class HelpController {
                 .append("\"uri\": \"JobApplication\",")
                 .append("\"type\": \"SFOData.JobApplication\"")
                 .append("},")
-                .append("\"candidateId\": \"").append(getCandidateId(jobAppDetails.get("email"))).append("\",")
-                .append("\"jobReqId\": \"").append(jobAppDetails.get("jobReqId")).append("\",")
-                .append("\"contactEmail\": \"lebron.james@sapcom\"")
+                .append("\"candidateId\": \"").append(getCandidateId(jobAppDetails.get("username"))).append("\",")
+                .append("\"jobReqId\": \"").append(jobAppDetails.get("jobReqId")).append("\"")
                 .append("}");
         return sb.toString();
     }
@@ -196,13 +231,14 @@ public class HelpController {
                 sb.append("externalTitle" + "%20eq%20" + "\'"+jobReqSearchAreaDto.getTitle()+"\'");
                 hasFielterBefore = true;
             }
-            if(!jobReqSearchAreaDto.getCity().equals(null)){
-                sb.append(hasFielterBefore ? "%20and%20": "");
-                sb.append("locale" + "%20eq%20" +"\'" + jobReqSearchAreaDto.getCity()+ "\'");
-                hasFielterBefore = true;
-            }
+//            if(!jobReqSearchAreaDto.getCity().equals(null)){
+//                sb.append(hasFielterBefore ? "%20and%20": "");
+//                sb.append("locale" + "%20eq%20" +"\'" + jobReqSearchAreaDto.getCity()+ "\'");
+//                hasFielterBefore = true;
+//            }
         }
         urlJobReq = urlJobReq + sb.toString();
+        System.out.println(urlJobReq);
         return urlJobReq;
     }
 
@@ -214,6 +250,7 @@ public class HelpController {
         conn.setRequestProperty("Authorization", basicAuth);
         conn.connect();
         StringBuilder requestBody = new StringBuilder();
+        System.out.println("Candidate OData, response is " + conn.getResponseCode());
         if (conn.getResponseCode() == 200) {
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String strCurrentLine;
@@ -235,6 +272,14 @@ public class HelpController {
         JSONObject candidate = (JSONObject) results.get(0);
 
         return (String) candidate.get("candidateId");
+    }
+
+    @RequestMapping(
+            value = "/**",
+            method = RequestMethod.OPTIONS
+    )
+    public ResponseEntity handle() {
+        return new ResponseEntity(HttpStatus.OK);
     }
 
 }

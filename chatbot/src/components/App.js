@@ -5,6 +5,7 @@ import TextMessage from './TextMessage';
 import FeedBack from './FeedBack';
 import JobSearch from './JobSearch';
 import JobList from './JobList';
+import Spinner from './Spinner';
 import '../App.css';
 import axios from 'axios';
 
